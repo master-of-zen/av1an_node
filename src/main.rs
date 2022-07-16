@@ -1,4 +1,5 @@
 use actix_web::{get, web, App, HttpServer, Responder};
+use local_ip_address::local_ip;
 
 mod handlers;
 
@@ -9,7 +10,9 @@ async fn greet(name: web::Path<String>) -> impl Responder {
 
 #[actix_web::main] // or #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    println!("Starting at 127.0.0.1:8080");
+    let my_local_ip = local_ip().unwrap();
+    let ip = format!("{:}:8080", my_local_ip.to_string());
+    println!("Starting at: {:}", ip);
 
     // Start http server
     HttpServer::new(move || {
@@ -19,7 +22,7 @@ async fn main() -> std::io::Result<()> {
             .route("/chunks", web::post().to(handlers::add_chunk))
             .route("/chunks/{id}", web::delete().to(handlers::delete_chunk))
     })
-    .bind("127.0.0.1:8080")?
+    .bind(ip)?
     .run()
     .await
 }
